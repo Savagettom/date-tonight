@@ -1206,6 +1206,7 @@ const scenarioPresets = [
   {
     id: "weeknight-quick",
     kicker: "Weeknight · 1-2h",
+    emoji: "☕",
     title: "下班后的快速 date",
     subtitle: "咖啡 → 轻晚餐 → 散步回家",
     meta: "1-2小时 · 轻松 · 稳定交往",
@@ -1226,6 +1227,7 @@ const scenarioPresets = [
   {
     id: "weekend-slow",
     kicker: "Weekend · 半天",
+    emoji: "🖼️",
     title: "一个没事情做的周末",
     subtitle: "展览 → 滨江散步 → 晚餐",
     meta: "半天 · 都可以 · 稳定交往",
@@ -1246,6 +1248,7 @@ const scenarioPresets = [
   {
     id: "rainy-indoor",
     kicker: "Rainy · 不动脑",
+    emoji: "☔",
     title: "雨天全室内 plan",
     subtitle: "咖啡馆 → 商场 → 火锅或居酒屋",
     meta: "2-4小时 · 室内优先 · 稳定交往",
@@ -1270,7 +1273,23 @@ const mbtiOptions = [
   "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP"
 ];
 
-const dateStageOptions = ["第一次见面", "暧昧期", "稳定交往", "长期伴侣"];
+const dateStageOptions = ["第一次见面", "暧昧期", "热恋期", "稳定交往", "长期伴侣"];
+
+// Short descriptions under each stage option to educate user about what the product does with each choice
+const dateStageDescriptions = {
+  "第一次见面": "还在试探，想低压力",
+  "暧昧期": "关系还没定，想推进一点",
+  "热恋期": "蜜月阶段，要密度和记忆点",
+  "稳定交往": "已经舒服了，想节省决策",
+  "长期伴侣": "换点新花样，不重复",
+};
+
+const durationDescriptions = {
+  "1-2小时": "下班后 / 短约",
+  "2-4小时": "一顿饭 + 接一场",
+  "半天": "从下午走到晚上",
+};
+
 const budgetOptions = ["不限", "¥", "¥¥", "¥¥¥", "¥¥¥¥"];
 const areaOptions = ["不限", "武康路", "安福路", "淮海路", "南京西路", "新天地", "外滩", "陆家嘴", "前滩", "徐汇滨江", "黄浦江边", "虹桥古北", "音乐学院", "复兴西路"];
 const timeWindowOptions = ["白天", "晚上", "周末半天"];
@@ -1490,6 +1509,16 @@ function generateRecommendation(
     if (rerollMode === "balanced") route = routes[1];
   }
 
+  if (dateStage === "热恋期") {
+    tagline = rerollMode === "memorable" ? "甜度拉满，记忆点管够" : "热恋里就是要做点值得发朋友圈的事";
+    analysis = rerollMode === "memorable"
+      ? "热恋期的核心是制造高记忆密度：氛围感强的场所、有仪式感的转场、能让你们第二天还在聊昨晚的小细节。不要偷懒，这个阶段值得投入。"
+      : "热恋期不用追求深度，追求的是密度和浓度。场所选有氛围的、活动选能互动的、最后留一段能拍照或拥抱的收尾。";
+    tags = rerollMode === "memorable" ? ["热恋期", "有氛围", "出片"] : ["热恋期", "互动", "有仪式感"];
+    if (!picks.length) picks = ["sinan", "zhangyuan", "nabi-shanghai", "harmay", "westbund", "speak-low", "cj-arte"];
+    route = rerollMode === "memorable" ? routes[3] : routes[0];
+  }
+
   if (dateStage === "长期伴侣") {
     tagline = rerollMode === "memorable" ? "给熟悉关系一点新鲜感和记忆点" : "适合周末直接照着走的一整段双人计划";
     analysis = rerollMode === "memorable"
@@ -1674,6 +1703,8 @@ function getExecutiveSummary(recommendation) {
       ? "建议把本次见面控制在 60–90 分钟，以低压力破冰为主"
       : dateStage === "暧昧期"
       ? "建议先完成轻量开场，再通过一次转场测试关系推进空间"
+      : dateStage === "热恋期"
+      ? "建议安排有氛围、能制造记忆点的动线，密度比深度更重要"
       : dateStage === "稳定交往"
       ? "建议把这次约会排成一整晚的轻量 schedule，重点解决去哪和怎么接的问题"
       : "建议直接按完整路线执行，减少讨论成本，把‘想不到’外包给计划生成";
@@ -2009,7 +2040,7 @@ function SmartTransferDemo() {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-mauve">Smart Transfer</p>
-            <h3 className="serif-hero mt-3 text-[26px] leading-tight text-ink">
+            <h3 className="serif-hero mt-3 text-[22px] sm:text-[26px] leading-tight text-ink">
               下一站，<span className="italic text-mauve">实时</span>给你。
             </h3>
           </div>
@@ -2247,7 +2278,7 @@ function BackHeader({ title, onBack }) {
       </Button>
       <div>
         <p className="serif-hero text-[14px] tracking-tight" style={{ color: "#8A8278" }}>Date Tonight</p>
-        <h2 className="serif-hero mt-0.5 text-[28px] leading-tight" style={{ color: "#1A1A1A" }}>{title}</h2>
+        <h2 className="serif-hero mt-0.5 text-[22px] sm:text-[28px] leading-tight" style={{ color: "#1A1A1A" }}>{title}</h2>
       </div>
     </div>
   );
@@ -2302,15 +2333,53 @@ export default function ShanghaiDatingGuideDemo() {
   const [autoDateSchedule, setAutoDateSchedule] = useState(() => buildAutoDateSchedule(initialRecommendation()));
   const [scheduleBlockHints, setScheduleBlockHints] = useState({});
 
-  // === Hinge-style design tokens (fonts + css vars) ===
+  // Wizard step (0..3): 0=Stage, 1=Duration, 2=Context, 3=Advanced/Generate
+  // showResult: true when user has finished wizard and sees schedule. Reset to false on re-enter Plan page.
+  const [wizardStep, setWizardStep] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+
+  // Ceremony: the shake-it overlay state. Shown full-screen after generating, before result.
+  const [ceremonyPhase, setCeremonyPhase] = useState(null); // null | "open" | "line1" | "line2" | "line3" | "closing"
+
+  // Reset wizard when entering Plan page fresh (from home tile). If entering from preset or result,
+  // handled separately.
+  function enterPlanWizardFresh() {
+    setWizardStep(0);
+    setShowResult(false);
+    setPage("mbti");
+  }
+
+  // When coming back to edit (from result screen), jump into wizard at step 0 but keep existing state.
+  function editPlan() {
+    setShowResult(false);
+    setWizardStep(0);
+  }
+
+  // Context-aware ceremony lines. The ceremony overlay prints three lines sequentially:
+  // line1 = "听到了。"
+  // line2 = varies based on what user wrote in context
+  // line3 = "为你们俩排着……"
+  function getCeremonyLine2() {
+    const ctx = (context || "").toLowerCase();
+    if (/牛排|steak/i.test(ctx)) return "想吃牛排……";
+    if (/日料|寿司|刺身|omakase|板前/i.test(ctx)) return "日料……";
+    if (/韩料|烤肉|韩式/i.test(ctx)) return "韩料……";
+    if (/火锅/i.test(ctx)) return "火锅……";
+    if (/川菜|辣/i.test(ctx)) return "辣的……";
+    if (/粤菜/i.test(ctx)) return "粤菜……";
+    if (/意大利|意餐|pasta|pizza/i.test(ctx)) return "意餐……";
+    if (/雨|下雨|淋/i.test(ctx)) return "雨天……";
+    if (/累|疲惫|下班/i.test(ctx)) return "Ta 累了……";
+    if (/周年|纪念|生日/i.test(ctx)) return "要有仪式感……";
+    if (/拍照|出片|朋友圈/i.test(ctx)) return "想出片……";
+    if (/第一次|见面|初次/i.test(ctx)) return "第一次……";
+    return "今晚交给我。";
+  }
+
+  // === Hinge-style design tokens (css vars + classes) ===
+  // Fonts are loaded via next/font in app/layout.tsx (optimized, self-hosted).
   useEffect(() => {
-    if (document.getElementById("date-tonight-fonts")) return;
-    const link = document.createElement("link");
-    link.id = "date-tonight-fonts";
-    link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap";
-    document.head.appendChild(link);
+    if (document.getElementById("date-tonight-style")) return;
 
     const style = document.createElement("style");
     style.id = "date-tonight-style";
@@ -2327,9 +2396,9 @@ export default function ShanghaiDatingGuideDemo() {
         --stone-400: #A8A299;
         --stone-600: #4A453E;
       }
-      .font-display { font-family: 'Fraunces', 'Songti SC', Georgia, serif; font-optical-sizing: auto; }
-      .font-body { font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif; }
-      body { font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif; }
+      .font-display { font-family: var(--font-fraunces), 'Songti SC', Georgia, serif; font-optical-sizing: auto; }
+      .font-body { font-family: var(--font-inter), 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif; }
+      body { font-family: var(--font-inter), 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif; }
       /* Hinge-style big CTA */
       .btn-hinge-primary {
         background: var(--ink);
@@ -2354,7 +2423,103 @@ export default function ShanghaiDatingGuideDemo() {
       .border-ink { border-color: var(--ink); }
       .border-mauve { border-color: var(--mauve); }
       /* Serif headline micro-adjustments */
-      .serif-hero { font-family: 'Fraunces', 'Songti SC', Georgia, serif; font-weight: 500; letter-spacing: -0.025em; font-variation-settings: "SOFT" 50, "WONK" 0; }
+      .serif-hero { font-family: var(--font-fraunces), 'Songti SC', Georgia, serif; font-weight: 500; letter-spacing: -0.025em; font-variation-settings: "SOFT" 50, "WONK" 0; }
+
+      /* Shake animation for 摇一摇 feedback — gives user a visible sense of "shook" */
+      @keyframes shake {
+        0%, 100% { transform: translateX(0) rotate(0); }
+        10% { transform: translateX(-3px) rotate(-1deg); }
+        20% { transform: translateX(3px) rotate(1deg); }
+        30% { transform: translateX(-4px) rotate(-1.5deg); }
+        40% { transform: translateX(4px) rotate(1.5deg); }
+        50% { transform: translateX(-3px) rotate(-1deg); }
+        60% { transform: translateX(3px) rotate(1deg); }
+        70% { transform: translateX(-2px) rotate(-0.5deg); }
+        80% { transform: translateX(2px) rotate(0.5deg); }
+        90% { transform: translateX(-1px) rotate(0); }
+      }
+      .animate-shake { animation: shake 0.9s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+      @keyframes spin-fast {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .animate-spin-fast { animation: spin-fast 0.6s linear infinite; }
+
+      /* ============================================================
+         CEREMONY ANIMATIONS — full-screen shake result reveal
+         Timings sync with runRecommendation setTimeout schedule:
+           0ms     open   (dark fade in)
+           450ms   line1  "听到了。"
+           1350ms  line2  context-aware line
+           2200ms  line3  "为你们俩排着……"
+           2850ms  closing (sparkle burst)
+           3200ms  fade to result
+         ============================================================ */
+
+      /* Mauve breathing glow — gentle pulse throughout ceremony */
+      @keyframes ceremony-glow {
+        0%, 100% { opacity: 0.6; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.12); }
+      }
+      .animate-ceremony-glow { animation: ceremony-glow 2.2s ease-in-out infinite; }
+
+      /* Outer halo — slow rotation for subtle life */
+      @keyframes ceremony-halo {
+        0% { transform: rotate(0deg) scale(1.4); opacity: 0.5; }
+        100% { transform: rotate(360deg) scale(1.4); opacity: 0.5; }
+      }
+      .animate-ceremony-halo { animation: ceremony-halo 8s linear infinite; }
+
+      /* Each editorial text line: fade in + drift up slightly */
+      @keyframes ceremony-line {
+        0% { opacity: 0; transform: translateY(12px); filter: blur(6px); }
+        60% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+      }
+      .animate-ceremony-line { animation: ceremony-line 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+      /* Closing sparkle burst */
+      @keyframes ceremony-burst {
+        0% { opacity: 0; transform: scale(0.3); }
+        40% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(3); }
+      }
+      .animate-ceremony-burst { animation: ceremony-burst 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+      /* ====== Ceremony animations (方向 A 优雅版) ====== */
+      @keyframes ceremony-fade-in { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes ceremony-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+      /* Mauve glow — a soft breathing orb in the center of the dark overlay */
+      @keyframes ceremony-glow {
+        0%, 100% { opacity: 0.35; transform: scale(0.9); filter: blur(60px); }
+        50% { opacity: 0.75; transform: scale(1.2); filter: blur(80px); }
+      }
+      .ceremony-glow {
+        animation: ceremony-glow 1.8s ease-in-out infinite;
+      }
+
+      /* Line reveal: each serif-hero line fades up when its phase is active */
+      @keyframes ceremony-line-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .ceremony-line { animation: ceremony-line-in 0.5s ease-out both; }
+
+      /* Final collapse into a sparkle then burst into particles */
+      @keyframes ceremony-collapse {
+        0% { transform: scale(1); opacity: 1; }
+        60% { transform: scale(0.2); opacity: 1; }
+        100% { transform: scale(0); opacity: 0; }
+      }
+      .ceremony-collapse { animation: ceremony-collapse 0.4s ease-in both; }
+
+      /* Overlay slide-off to reveal result beneath */
+      @keyframes ceremony-overlay-out {
+        0% { opacity: 1; }
+        100% { opacity: 0; }
+      }
     `;
     document.head.appendChild(style);
   }, []);
@@ -2407,12 +2572,42 @@ export default function ShanghaiDatingGuideDemo() {
   }
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [justShook, setJustShook] = useState(false);
   const [replacingBlockIndex, setReplacingBlockIndex] = useState(null);
   const [aiError, setAiError] = useState(null);
 
   async function runRecommendation(nextMode = rerollMode) {
     setRerollMode(nextMode);
     setAiError(null);
+
+    // ======== CEREMONY: full-screen animation ========
+    // Only trigger ceremony when coming from wizard final step (first-time generation).
+    // Reroll from result page ("更保守"/"更有记忆点") uses lightweight shake instead.
+    const isFirstGenerate = !showResult;
+    if (isFirstGenerate) {
+      // Try native haptic feedback (iOS 16.4+ Safari, Android Chrome)
+      try {
+        if (typeof navigator !== "undefined" && navigator.vibrate) {
+          navigator.vibrate([100, 50, 150, 50, 100]);
+        }
+      } catch (e) {
+        // silent: not all browsers support vibrate, and that's fine
+      }
+      setCeremonyPhase("open");
+      // Phased text reveal — timing synced to the visual pulse
+      setTimeout(() => setCeremonyPhase("line1"), 450);
+      setTimeout(() => setCeremonyPhase("line2"), 1350);
+      setTimeout(() => setCeremonyPhase("line3"), 2200);
+      setTimeout(() => setCeremonyPhase("closing"), 2850);
+      setTimeout(() => {
+        setCeremonyPhase(null);
+        setShowResult(true);
+      }, 3200);
+    } else {
+      // Reroll from result — just a quick shake, no full ceremony
+      setJustShook(true);
+      setTimeout(() => setJustShook(false), 900);
+    }
 
     // 1. Rule engine generates the structural recommendation (venues, route, schedule)
     const nextRecommendation = generateRecommendation(
@@ -2502,6 +2697,8 @@ export default function ShanghaiDatingGuideDemo() {
     setScheduleBlockHints({});
     setRerollMode("balanced");
     setAiError(null);
+    // Preset skips wizard entirely and shows result immediately
+    setShowResult(true);
     setPage("mbti");
 
     // Trigger AI polish in background
@@ -2586,12 +2783,12 @@ export default function ShanghaiDatingGuideDemo() {
 
   return (
     <div className="min-h-screen bg-cream text-stone-900">
-      <div className="mx-auto max-w-md px-4 pb-28 pt-5">
+      <div className="mx-auto max-w-md px-5 pb-28 pt-5">
         {page === "home" && (
           <div className="space-y-5">
             <div className="flex items-start justify-between pt-1">
               <div>
-                <h1 className="serif-hero text-[26px] leading-none text-ink">Date Tonight</h1>
+                <h1 className="serif-hero text-[22px] sm:text-[26px] leading-none text-ink">Date Tonight</h1>
                 <p className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.28em] text-stone-500">上海最强约会指南</p>
               </div>
               <Badge className="rounded-full bg-ink text-white">{favoriteCount} 收藏</Badge>
@@ -2599,7 +2796,7 @@ export default function ShanghaiDatingGuideDemo() {
 
             <section className="rounded-[32px] bg-paper border border-stone-200 p-7 shadow-sm">
               <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-stone-500">Tonight · 今晚</p>
-              <h2 className="serif-hero mt-4 text-[44px] leading-[1.02] text-ink">
+              <h2 className="serif-hero mt-4 text-[32px] sm:text-[44px] leading-[1.02] text-ink">
                 不知道去哪？
                 <br />
                 <span className="italic text-mauve">摇一次</span>就知道。
@@ -2609,7 +2806,7 @@ export default function ShanghaiDatingGuideDemo() {
                 第一次见面、稳定情侣、长期伴侣，都能用。
               </p>
               <button
-                onClick={() => setPage("mbti")}
+                onClick={enterPlanWizardFresh}
                 className="btn-hinge-primary mt-6 inline-flex items-center gap-2 px-6 py-3 text-[14px]"
               >
                 <Sparkles className="h-4 w-4" />
@@ -2631,24 +2828,24 @@ export default function ShanghaiDatingGuideDemo() {
             <div className="grid grid-cols-2 gap-3">
               <button onClick={() => setPage("venues")} className="group rounded-[22px] border border-stone-200 bg-paper p-5 text-left transition hover:-translate-y-0.5 hover:border-ink hover:shadow-md">
                 <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">01</p>
-                <h3 className="serif-hero mt-4 text-[22px] leading-tight text-ink">直接选店</h3>
+                <h3 className="serif-hero mt-4 text-[18px] sm:text-[22px] leading-tight text-ink">直接选店</h3>
                 <p className="mt-2 text-[12px] leading-relaxed text-stone-600-ink">先把颗粒度拉到可执行，不再靠临场空转。</p>
               </button>
               <button onClick={() => setPage("routes")} className="group rounded-[22px] border border-stone-200 bg-paper p-5 text-left transition hover:-translate-y-0.5 hover:border-ink hover:shadow-md">
                 <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">02</p>
-                <h3 className="serif-hero mt-4 text-[22px] leading-tight text-ink">直接走路线</h3>
+                <h3 className="serif-hero mt-4 text-[18px] sm:text-[22px] leading-tight text-ink">直接走路线</h3>
                 <p className="mt-2 text-[12px] leading-relaxed text-stone-600-ink">从一个起点开始，顺手接上下一段。</p>
               </button>
-              <button onClick={() => setPage("mbti")} className="group rounded-[22px] bg-ink p-5 text-left text-white transition hover:-translate-y-0.5 hover:shadow-xl">
+              <button onClick={enterPlanWizardFresh} className="group rounded-[22px] bg-ink p-5 text-left text-white transition hover:-translate-y-0.5 hover:shadow-xl">
                 <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-stone-400">03 · AI Plan</p>
-                <h3 className="serif-hero mt-4 text-[26px] leading-[1.05] italic">
+                <h3 className="serif-hero mt-4 text-[20px] sm:text-[26px] leading-[1.05] italic">
                   别再问<br/><span className="text-mauve-soft">"你想吃什么"</span>
                 </h3>
                 <p className="mt-3 text-[11px] leading-relaxed text-stone-400">摇一次，今晚去哪就定了。</p>
               </button>
               <button onClick={() => setPage("transfer")} className="group rounded-[22px] border border-stone-200 bg-mauve-soft p-5 text-left transition hover:-translate-y-0.5 hover:shadow-md">
                 <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-mauve">04 · Live</p>
-                <h3 className="serif-hero mt-4 text-[26px] leading-[1.05] text-ink">
+                <h3 className="serif-hero mt-4 text-[20px] sm:text-[26px] leading-[1.05] text-ink">
                   约会中的<br/><span className="italic text-mauve">Copilot</span>
                 </h3>
                 <p className="mt-3 text-[11px] leading-relaxed text-stone-600-ink">不是静态攻略，是实时决策。</p>
@@ -2658,7 +2855,7 @@ export default function ShanghaiDatingGuideDemo() {
             <div className="space-y-3 pt-4">
               <div className="px-1">
                 <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-stone-500">Tonight's quick plans</p>
-                <h2 className="serif-hero mt-2 text-[26px] leading-[1.1] text-ink">
+                <h2 className="serif-hero mt-2 text-[22px] sm:text-[26px] leading-[1.1] text-ink">
                   不想填表？<br/><span className="italic text-mauve">挑一个直接跑</span>
                 </h2>
                 <p className="mt-2 text-[12px] leading-relaxed text-stone-600-ink">
@@ -2671,15 +2868,17 @@ export default function ShanghaiDatingGuideDemo() {
                   onClick={() => applyPreset(preset)}
                   className="group w-full rounded-[24px] border border-stone-200 bg-paper p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-ink hover:shadow-md"
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-4">
+                    <div className="shrink-0 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FAF6EE] text-[26px] border border-stone-200">
+                      {preset.emoji}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-mauve">{preset.kicker}</p>
-                      <h3 className="serif-hero mt-2 text-[20px] leading-tight text-ink">{preset.title}</h3>
+                      <h3 className="serif-hero mt-1.5 text-[17px] sm:text-[20px] leading-tight text-ink">{preset.title}</h3>
                       <p className="mt-1.5 text-[12px] leading-relaxed text-stone-600-ink">{preset.subtitle}</p>
-                      <p className="mt-3 text-[11px] text-stone-500">{preset.meta}</p>
+                      <p className="mt-2 text-[11px] text-stone-500">{preset.meta}</p>
                     </div>
                     <div className="shrink-0 flex items-center gap-1 text-ink group-hover:translate-x-0.5 transition-transform">
-                      <span className="serif-hero italic text-[13px]">直接跑</span>
                       <ChevronRight className="h-4 w-4" />
                     </div>
                   </div>
@@ -2741,7 +2940,7 @@ export default function ShanghaiDatingGuideDemo() {
             <BackHeader title={selectedVenue.name} onBack={() => setPage("venues")} />
             <div className="rounded-[32px] border border-ink bg-ink p-7 text-white shadow-lg">
               <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-stone-400">{selectedVenue.district} · {selectedVenue.category}</p>
-              <h3 className="serif-hero mt-4 text-[36px] leading-[1.05]">{selectedVenue.name}</h3>
+              <h3 className="serif-hero mt-4 text-[28px] sm:text-[36px] leading-[1.05]">{selectedVenue.name}</h3>
               <p className="mt-3 text-[12px] italic text-stone-400">{selectedVenue.area} · 被提到 {selectedVenue.mentions} 次</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Badge className="bg-white/10 text-white">{selectedVenue.price}</Badge>
@@ -2804,7 +3003,7 @@ export default function ShanghaiDatingGuideDemo() {
             <BackHeader title="路线" onBack={() => setPage("routes")} />
             <div className="rounded-[32px] border border-ink bg-ink p-7 text-white shadow-lg">
               <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-stone-400">Tour guide</p>
-              <h3 className="serif-hero mt-4 text-[34px] leading-[1.05]">{selectedRoute.title}</h3>
+              <h3 className="serif-hero mt-4 text-[26px] sm:text-[34px] leading-[1.05]">{selectedRoute.title}</h3>
               <p className="mt-3 text-[13px] italic text-stone-400">{selectedRoute.tagline}</p>
               <p className="mt-5 text-[14px] leading-[1.7] text-stone-300">{selectedRoute.desc}</p>
               <div className="mt-5 flex flex-wrap gap-2">
@@ -2828,292 +3027,510 @@ export default function ShanghaiDatingGuideDemo() {
           </div>
         )}
 
+        {/* ============================================================
+            CEREMONY OVERLAY — full-screen, shown when ceremonyPhase !== null.
+            Visual: dark backdrop, mauve pulsing glow, sequential editorial text lines.
+            Total duration ~3.2s (timings set in runRecommendation).
+           ============================================================ */}
+        {ceremonyPhase && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
+            style={{ background: "radial-gradient(ellipse at center, #1a1a1a 0%, #0d0d12 100%)" }}
+          >
+            {/* Breathing mauve glow — central pulse */}
+            <div
+              className={cn(
+                "absolute inset-0 pointer-events-none",
+                ceremonyPhase !== "closing" && "animate-ceremony-glow"
+              )}
+              style={{
+                background: "radial-gradient(circle at center, rgba(184,169,201,0.32) 0%, rgba(164,134,157,0.14) 30%, transparent 60%)",
+              }}
+            />
+
+            {/* Second softer halo that rotates slowly */}
+            <div
+              className="absolute inset-0 pointer-events-none animate-ceremony-halo"
+              style={{
+                background: "conic-gradient(from 0deg, transparent 0%, rgba(238,230,234,0.08) 25%, transparent 50%, rgba(184,169,201,0.10) 75%, transparent 100%)",
+              }}
+            />
+
+            {/* Sparkle that appears at the closing moment and bursts */}
+            {ceremonyPhase === "closing" && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="animate-ceremony-burst">
+                  <Sparkles className="h-12 w-12 text-white" style={{ filter: "drop-shadow(0 0 24px rgba(238,230,234,0.8))" }} />
+                </div>
+              </div>
+            )}
+
+            {/* Sequential editorial text lines */}
+            <div className="relative z-10 max-w-md px-8 text-center">
+              {(ceremonyPhase === "line1" || ceremonyPhase === "line2" || ceremonyPhase === "line3") && (
+                <div
+                  key="line1"
+                  className="serif-hero italic animate-ceremony-line"
+                  style={{
+                    color: "#F5EFF1",
+                    fontSize: "clamp(32px, 7vw, 44px)",
+                    lineHeight: 1.15,
+                    textShadow: "0 2px 24px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  听到了。
+                </div>
+              )}
+
+              {(ceremonyPhase === "line2" || ceremonyPhase === "line3") && (
+                <div
+                  key="line2"
+                  className="serif-hero italic mt-4 animate-ceremony-line"
+                  style={{
+                    color: "#E8D9E1",
+                    fontSize: "clamp(28px, 6vw, 38px)",
+                    lineHeight: 1.2,
+                    textShadow: "0 2px 24px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {getCeremonyLine2()}
+                </div>
+              )}
+
+              {ceremonyPhase === "line3" && (
+                <div
+                  key="line3"
+                  className="serif-hero italic mt-4 animate-ceremony-line"
+                  style={{
+                    color: "#D4C4CD",
+                    fontSize: "clamp(22px, 4.5vw, 28px)",
+                    lineHeight: 1.3,
+                    textShadow: "0 2px 24px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  为你们俩排着……
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {page === "mbti" && (
           <div className="space-y-4">
-            <BackHeader title="为今晚排一个" onBack={() => setPage("home")} />
+            <BackHeader title="为今晚排一个" onBack={() => (showResult ? setPage("home") : setPage("home"))} />
 
-            <div className="rounded-[24px] border border-stone-200 bg-paper p-6">
-              <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-stone-500">AI Plan</p>
-              <h3 className="serif-hero mt-3 text-[24px] leading-[1.15] text-ink">
-                今晚去哪，<span className="italic text-mauve">摇一次</span>就定。
-              </h3>
-              <p className="mt-3 text-[12px] leading-relaxed text-stone-600-ink">
-                把"你想吃什么"、"我都行"的循环交给系统。填 5 件事，剩下的它排。
-              </p>
+            {/* ========== WIZARD + FORM (only shown before result) ========== */}
+            {!showResult && !ceremonyPhase && (
+            <>
+            {/* ============================================================
+                WIZARD — 4-step flow, one question per screen.
+                Step 0: Stage  |  Step 1: Duration  |  Step 2: Context  |  Step 3: Advanced + Generate
+               ============================================================ */}
+
+            {/* Progress pill */}
+            <div className="flex items-center justify-center gap-1.5 py-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-1 rounded-full transition-all duration-300",
+                    i < wizardStep ? "w-6 bg-ink" : i === wizardStep ? "w-10 bg-ink" : "w-6 bg-stone-200"
+                  )}
+                />
+              ))}
             </div>
 
-            <div className="space-y-5 rounded-[24px] border border-stone-200 bg-paper p-6">
-                {/* ========== QUICK MODE（PRD 指定的 5 项默认可见） ========== */}
-
-                {/* 1. 关系阶段 */}
+            {/* ==================== STEP 0: Stage ==================== */}
+            {wizardStep === 0 && (
+              <div className="rounded-[28px] border border-stone-200 bg-paper p-6 sm:p-8 space-y-6">
                 <div>
-                  <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Stage · 关系阶段</p>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {dateStageOptions.map((item) => {
-                      const active = dateStage === item;
-                      return (
-                        <button
-                          type="button"
-                          key={item}
-                          onClick={() => setDateStage(item)}
-                          className={cn(
-                            "rounded-full border px-2 py-2.5 text-[12px] font-medium transition",
-                            active ? "border-ink bg-ink text-white" : "border-stone-200 bg-[#FAF6EE] text-stone-600-ink hover:border-mauve hover:text-ink"
-                          )}
-                        >
-                          {item}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-mauve">Step 1 · 4</p>
+                  <h2 className="serif-hero mt-3 text-[28px] sm:text-[34px] leading-[1.1] text-ink">
+                    今晚是<span className="italic text-mauve">跟谁</span>？
+                  </h2>
+                  <p className="mt-2 text-[12.5px] leading-relaxed text-stone-600-ink">
+                    选一个最接近的状态。AI 会按这个排整晚的节奏和场所。
+                  </p>
                 </div>
+                <div className="space-y-2">
+                  {dateStageOptions.map((item) => {
+                    const active = dateStage === item;
+                    return (
+                      <button
+                        type="button"
+                        key={item}
+                        onClick={() => setDateStage(item)}
+                        className={cn(
+                          "w-full rounded-[18px] border-2 px-5 py-3.5 text-left transition",
+                          active
+                            ? "border-ink bg-ink text-white"
+                            : "border-stone-200 bg-[#FAF6EE] hover:border-mauve"
+                        )}
+                      >
+                        <div className="serif-hero text-[17px] leading-tight">{item}</div>
+                        <div className={cn(
+                          "mt-0.5 text-[11.5px]",
+                          active ? "text-stone-300" : "text-stone-500"
+                        )}>
+                          {dateStageDescriptions[item]}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setPage("home")}
+                    className="text-[13px] text-stone-500 hover:text-ink"
+                  >
+                    ← 返回首页
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep(1)}
+                    className="btn-hinge-primary px-6 py-2.5 text-[14px]"
+                  >
+                    下一步 →
+                  </button>
+                </div>
+              </div>
+            )}
 
-                {/* 2. 氛围目标 */}
+            {/* ==================== STEP 1: Duration ==================== */}
+            {wizardStep === 1 && (
+              <div className="rounded-[28px] border border-stone-200 bg-paper p-6 sm:p-8 space-y-6">
                 <div>
-                  <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Vibe · 想要的氛围</p>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {vibeGoalOptions.map((item) => {
-                      const active = vibeGoal === item;
-                      return (
-                        <button
-                          type="button"
-                          key={item}
-                          onClick={() => setVibeGoal(item)}
-                          className={cn(
-                            "rounded-full border px-2 py-2.5 text-[12px] font-medium transition",
-                            active ? "border-ink bg-ink text-white" : "border-stone-200 bg-[#FAF6EE] text-stone-600-ink hover:border-mauve hover:text-ink"
-                          )}
-                        >
-                          {item}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-mauve">Step 2 · 4</p>
+                  <h2 className="serif-hero mt-3 text-[28px] sm:text-[34px] leading-[1.1] text-ink">
+                    你们有<span className="italic text-mauve">多少时间</span>？
+                  </h2>
+                  <p className="mt-2 text-[12.5px] leading-relaxed text-stone-600-ink">
+                    这决定了 schedule 的长度和场所的节奏。
+                  </p>
                 </div>
+                <div className="space-y-2">
+                  {durationOptions.map((item) => {
+                    const active = duration === item;
+                    return (
+                      <button
+                        type="button"
+                        key={item}
+                        onClick={() => setDuration(item)}
+                        className={cn(
+                          "w-full rounded-[18px] border-2 px-5 py-3.5 text-left transition",
+                          active
+                            ? "border-ink bg-ink text-white"
+                            : "border-stone-200 bg-[#FAF6EE] hover:border-mauve"
+                        )}
+                      >
+                        <div className="serif-hero text-[17px] leading-tight">{item}</div>
+                        <div className={cn(
+                          "mt-0.5 text-[11.5px]",
+                          active ? "text-stone-300" : "text-stone-500"
+                        )}>
+                          {durationDescriptions[item]}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep(0)}
+                    className="text-[13px] text-stone-500 hover:text-ink"
+                  >
+                    ← 返回
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep(2)}
+                    className="btn-hinge-primary px-6 py-2.5 text-[14px]"
+                  >
+                    下一步 →
+                  </button>
+                </div>
+              </div>
+            )}
 
-                {/* 3. 双方出发地 + midpoint toggle */}
+            {/* ==================== STEP 2: Context ==================== */}
+            {wizardStep === 2 && (
+              <div className="rounded-[28px] border border-stone-200 bg-paper p-6 sm:p-8 space-y-5">
                 <div>
-                  <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Starting points · 双方位置</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      value={myStartLocation}
-                      onChange={(e) => setMyStartLocation(e.target.value)}
-                      placeholder="你：静安寺 / 武康路"
-                      className="rounded-full border-stone-200 bg-[#FAF6EE] px-4 py-3 text-[13px]"
-                    />
-                    <Input
-                      value={partnerStartLocation}
-                      onChange={(e) => setPartnerStartLocation(e.target.value)}
-                      placeholder="Ta：前滩 / 徐家汇"
-                      className="rounded-full border-stone-200 bg-[#FAF6EE] px-4 py-3 text-[13px]"
-                    />
-                  </div>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-mauve">Step 3 · 4</p>
+                  <h2 className="serif-hero mt-3 text-[28px] sm:text-[34px] leading-[1.1] text-ink">
+                    再告诉我<span className="italic text-mauve">一件事</span>。
+                  </h2>
+                  <p className="mt-2 text-[12.5px] leading-relaxed text-stone-600-ink">
+                    写一句今晚的情况。<span className="text-ink font-medium">这一栏最重要</span>——你写得越具体，AI 推荐越像"为你们俩定制"。
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-[20px] border border-stone-200 bg-[#FAF6EE] p-3.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-mauve leading-tight">Midpoint<br/>折中点</p>
-                      <IOSToggle on={useMidpointAssist} onClick={() => setUseMidpointAssist((p) => !p)} />
-                    </div>
-                    <p className="serif-hero mt-2.5 text-[13px] leading-snug text-ink">
-                      {midpointArea ? `落在 ${midpointArea}` : "填出发地自动生成"}
+                <div className="rounded-[20px] border-2 border-mauve/30 bg-mauve-soft/40 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-3.5 w-3.5 text-mauve shrink-0" />
+                    <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-mauve">
+                      今晚的情况 · brief
                     </p>
                   </div>
-
-                  <div className="rounded-[20px] border border-stone-200 bg-[#FAF6EE] p-3.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-mauve leading-tight">Fine<br/>Dining</p>
-                      <IOSToggle on={fineDiningNight} onClick={() => setFineDiningNight((p) => !p)} />
-                    </div>
-                    <p className="serif-hero mt-2.5 text-[13px] leading-snug text-ink">
-                      {fineDiningNight ? "按正式晚餐处理" : "不走正式流程"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 5. 一句话背景 */}
-                <div>
-                  <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Context · 一句话背景（可选）</p>
                   <Textarea
                     value={context}
                     onChange={(e) => setContext(e.target.value)}
-                    placeholder="比如：已经见过两次，这周想换个节奏"
-                    className="min-h-[70px] rounded-[18px] border-stone-200 bg-[#FAF6EE] px-4 py-3 text-[13px] placeholder:text-stone-400"
+                    placeholder="比如：对方爱吃牛排、怕辣，我刚下班有点累、今天下雨，上次去过外滩所以今晚想换个新地方……"
+                    className="min-h-[110px] rounded-[14px] border-stone-200 bg-paper px-4 py-3 text-[13px] placeholder:text-stone-400"
                   />
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    <span className="text-[10px] text-stone-500 mr-1 self-center">点一下加进来 →</span>
+                    {[
+                      "对方喜欢吃牛排",
+                      "今天下雨",
+                      "想吃日料",
+                      "对方刚下班很累",
+                      "周年纪念",
+                      "想拍照出片",
+                    ].map((tip) => (
+                      <button
+                        key={tip}
+                        type="button"
+                        onClick={() => setContext((prev) => prev ? `${prev}、${tip}` : tip)}
+                        className="rounded-full border border-stone-200 bg-paper px-2.5 py-1 text-[10.5px] text-stone-600-ink transition hover:border-mauve hover:text-ink"
+                      >
+                        + {tip}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-
-                {/* ========== ADVANCED FILTERS（折叠） ========== */}
-                <div className="rounded-[20px] border border-stone-200 bg-[#FAF6EE]">
+                {!context.trim() && (
+                  <p className="text-[11px] text-stone-500 text-center italic">
+                    可以跳过，但写 1 句话推荐会准很多。
+                  </p>
+                )}
+                <div className="flex items-center justify-between pt-1">
                   <button
                     type="button"
-                    onClick={() => setShowAdvanced((prev) => !prev)}
-                    className="flex w-full items-center justify-between px-4 py-3.5 text-left"
+                    onClick={() => setWizardStep(1)}
+                    className="text-[13px] text-stone-500 hover:text-ink"
                   >
-                    <div>
-                      <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-mauve">More preferences</p>
-                      <p className="serif-hero mt-1 text-[14px] text-ink">{showAdvanced ? "收起" : "展开 advanced"}</p>
-                    </div>
-                    <ChevronDown className={cn("h-4 w-4 text-stone-500 transition-transform", showAdvanced && "rotate-180")} />
+                    ← 返回
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep(3)}
+                    className="btn-hinge-primary px-6 py-2.5 text-[14px]"
+                  >
+                    下一步 →
+                  </button>
+                </div>
+              </div>
+            )}
 
-                  {showAdvanced && (
-                    <div className="space-y-4 border-t border-stone-200 p-4">
-                      {/* MBTI */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">You · 你</p>
-                          <select value={selfMbti} onChange={(e) => setSelfMbti(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-4 py-2.5 text-[13px] font-medium text-ink outline-none">
-                            <option value="">— 不填 —</option>
-                            {mbtiOptions.map((item) => <option key={item}>{item}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Ta · Ta</p>
-                          <select value={otherMbti} onChange={(e) => setOtherMbti(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-4 py-2.5 text-[13px] font-medium text-ink outline-none">
-                            <option value="">— 不填 —</option>
-                            {mbtiOptions.map((item) => <option key={item}>{item}</option>)}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* 预算 + 片区 */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Budget · 预算</p>
-                          <select value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-4 py-2.5 text-[13px] text-ink outline-none">
-                            {budgetOptions.map((item) => <option key={item}>{item}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Area · 片区</p>
-                          <select value={preferredArea} onChange={(e) => setPreferredArea(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-4 py-2.5 text-[13px] text-ink outline-none">
-                            {areaOptions.map((item) => <option key={item}>{item}</option>)}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* 时段 + 室内外 + 时长 */}
-                      <div className="grid grid-cols-3 gap-2">
-                        <div>
-                          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-stone-500">When</p>
-                          <select value={timeWindow} onChange={(e) => setTimeWindow(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-3 py-2.5 text-[12px] text-ink outline-none">
-                            {timeWindowOptions.map((item) => <option key={item}>{item}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-stone-500">Scene</p>
-                          <select value={scenePreference} onChange={(e) => setScenePreference(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-3 py-2.5 text-[12px] text-ink outline-none">
-                            {scenePreferenceOptions.map((item) => <option key={item}>{item}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-stone-500">Length</p>
-                          <select value={duration} onChange={(e) => setDuration(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-3 py-2.5 text-[12px] text-ink outline-none">
-                            {durationOptions.map((item) => <option key={item}>{item}</option>)}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* 天气 demo */}
-                      <div>
-                        <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Weather · 天气（demo）</p>
-                        <select value={weatherDemo} onChange={(e) => setWeatherDemo(e.target.value)} className="w-full rounded-full border border-stone-200 bg-paper px-4 py-2.5 text-[13px] text-ink outline-none">
-                          {weatherDemoOptions.map((item) => <option key={item}>{item}</option>)}
-                        </select>
-                      </div>
-
-                      {/* 活动偏好 */}
-                      <div>
-                        <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Activities · 活动偏好</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {activityOptions.map((item) => {
-                            const active = selectedActivities.includes(item);
-                            return (
-                              <button
-                                type="button"
-                                key={item}
-                                onClick={() => toggleActivity(item)}
-                                className={cn(
-                                  "rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition",
-                                  active ? "border-ink bg-ink text-white" : "border-stone-200 bg-paper text-stone-600-ink hover:border-mauve hover:text-ink"
-                                )}
-                              >
-                                {item}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+            {/* ==================== STEP 3: Advanced + Generate ==================== */}
+            {wizardStep === 3 && (
+              <div className="space-y-4">
+                <div className="rounded-[28px] border border-stone-200 bg-paper p-6 sm:p-8 space-y-2">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-mauve">Step 4 · 4</p>
+                  <h2 className="serif-hero mt-3 text-[24px] sm:text-[28px] leading-[1.1] text-ink">
+                    嫌推荐不够准？<br/><span className="italic text-mauve">再细调一下</span>。
+                  </h2>
+                  <p className="mt-2 text-[12.5px] leading-relaxed text-stone-600-ink">
+                    全部可跳过。想直接生成就按最下面的「摇一摇」。下面每一项都是给 AI 的硬约束。
+                  </p>
                 </div>
 
-                {/* How it works */}
-                <details className="group rounded-[20px] border border-stone-200 bg-[#FAF6EE] px-4 py-3">
-                  <summary className="flex items-center gap-3 cursor-pointer list-none">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-paper shrink-0">
-                      <Sparkles className="h-3.5 w-3.5 text-mauve" />
+                <div className="rounded-[24px] border border-stone-200 bg-paper p-5 space-y-5">
+                  {/* Vibe */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Vibe · 整晚的氛围</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">"轻松"会选日常场所；"有仪式感"会往 fine dining 偏。</p>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {vibeGoalOptions.map((item) => {
+                        const active = vibeGoal === item;
+                        return (
+                          <button
+                            type="button"
+                            key={item}
+                            onClick={() => setVibeGoal(item)}
+                            className={cn(
+                              "rounded-full border px-2 py-2 text-[12px] font-medium transition",
+                              active ? "border-ink bg-ink text-white" : "border-stone-200 bg-[#FAF6EE] text-stone-600-ink hover:border-mauve hover:text-ink"
+                            )}
+                          >
+                            {item}
+                          </button>
+                        );
+                      })}
                     </div>
-                    <div className="flex-1 text-[11px] leading-[1.55] text-stone-600-ink">
-                      按下按钮时，系统做了什么？<span className="text-mauve">展开看 ↓</span>
-                    </div>
-                  </summary>
-                  <div className="mt-3 ml-11 space-y-2 text-[12px] leading-[1.65] text-stone-600-ink">
-                    <p><span className="text-mauve font-medium">①</span> 规则引擎按你的输入（关系阶段、氛围、片区、出发地、context 关键词……）排出场所、schedule 和 route。</p>
-                    <p><span className="text-mauve font-medium">②</span> 同时，Claude 读你的具体输入，写一段只属于今晚的 tagline 和 analysis。</p>
-                    <p><span className="text-mauve font-medium">③</span> 如果 AI 慢或挂了，你看到的是规则引擎兜底版本——不会白屏。</p>
                   </div>
-                </details>
 
-                {/* 生成按钮 */}
+                  {/* 出发地 */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Starting points · 双方出发地</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">填了之后 Midpoint 会自动算中间点，不偏向某一方。</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        value={myStartLocation}
+                        onChange={(e) => setMyStartLocation(e.target.value)}
+                        placeholder="你：静安寺"
+                        className="rounded-full border-stone-200 bg-[#FAF6EE] px-4 py-2.5 text-[13px]"
+                      />
+                      <Input
+                        value={partnerStartLocation}
+                        onChange={(e) => setPartnerStartLocation(e.target.value)}
+                        placeholder="Ta：前滩"
+                        className="rounded-full border-stone-200 bg-[#FAF6EE] px-4 py-2.5 text-[13px]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Switches */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Switches · 两个开关</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">
+                      <span className="text-ink">Midpoint</span>：按中间点选场所。<span className="text-ink">Fine Dining</span>：走"碰面→晚餐→酒吧收尾"。
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-[18px] border border-stone-200 bg-[#FAF6EE] p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-mauve leading-tight">Midpoint<br/>折中点</p>
+                          <IOSToggle on={useMidpointAssist} onClick={() => setUseMidpointAssist((p) => !p)} />
+                        </div>
+                        <p className="serif-hero mt-2 text-[12.5px] leading-snug text-ink">
+                          {midpointArea ? `落在 ${midpointArea}` : "填出发地自动"}
+                        </p>
+                      </div>
+                      <div className="rounded-[18px] border border-stone-200 bg-[#FAF6EE] p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-mauve leading-tight">Fine<br/>Dining</p>
+                          <IOSToggle on={fineDiningNight} onClick={() => setFineDiningNight((p) => !p)} />
+                        </div>
+                        <p className="serif-hero mt-2 text-[12.5px] leading-snug text-ink">
+                          {fineDiningNight ? "按正式晚餐" : "不走正式流程"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Budget + Area */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Budget & Area · 预算和片区</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">¥¥ 约等于人均 200–400；选了片区就不会推附近以外的地方。</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full rounded-full border border-stone-200 bg-[#FAF6EE] px-4 py-2.5 text-[13px] text-ink outline-none">
+                        {budgetOptions.map((item) => <option key={item}>{item === "不限" ? "预算不限" : `预算 ${item}`}</option>)}
+                      </select>
+                      <select value={preferredArea} onChange={(e) => setPreferredArea(e.target.value)} className="w-full rounded-full border border-stone-200 bg-[#FAF6EE] px-4 py-2.5 text-[13px] text-ink outline-none">
+                        {areaOptions.map((item) => <option key={item}>{item === "不限" ? "片区不限" : item}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* When + Where */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">When & Where · 时段和场景</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">影响时间线；室内/户外决定雨天会不会被推到街上。</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select value={timeWindow} onChange={(e) => setTimeWindow(e.target.value)} className="w-full rounded-full border border-stone-200 bg-[#FAF6EE] px-3 py-2.5 text-[12px] text-ink outline-none">
+                        {timeWindowOptions.map((item) => <option key={item}>{item}</option>)}
+                      </select>
+                      <select value={scenePreference} onChange={(e) => setScenePreference(e.target.value)} className="w-full rounded-full border border-stone-200 bg-[#FAF6EE] px-3 py-2.5 text-[12px] text-ink outline-none">
+                        {scenePreferenceOptions.map((item) => <option key={item}>{item}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Weather */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Weather · 天气</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">目前是手动演示。以后会接真实天气 API。</p>
+                    <select value={weatherDemo} onChange={(e) => setWeatherDemo(e.target.value)} className="w-full rounded-full border border-stone-200 bg-[#FAF6EE] px-4 py-2.5 text-[13px] text-ink outline-none">
+                      {weatherDemoOptions.map((item) => <option key={item}>{item}</option>)}
+                    </select>
+                  </div>
+
+                  {/* Activities */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Activities · 今晚想做什么</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">多选。AI 会尽量让 schedule 里包含这些活动。</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {activityOptions.map((item) => {
+                        const active = selectedActivities.includes(item);
+                        return (
+                          <button
+                            type="button"
+                            key={item}
+                            onClick={() => toggleActivity(item)}
+                            className={cn(
+                              "rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition",
+                              active ? "border-ink bg-ink text-white" : "border-stone-200 bg-[#FAF6EE] text-stone-600-ink hover:border-mauve hover:text-ink"
+                            )}
+                          >
+                            {item}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* MBTI */}
+                  <div>
+                    <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">MBTI · 性格（可选，影响小）</p>
+                    <p className="mb-2 text-[10.5px] leading-relaxed text-stone-500">会让 analysis 里提一下性格组合，推荐本身影响不大。懒得填就跳过。</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select value={selfMbti} onChange={(e) => setSelfMbti(e.target.value)} className="w-full rounded-full border border-stone-200 bg-[#FAF6EE] px-4 py-2.5 text-[13px] font-medium text-ink outline-none">
+                        <option value="">— 你 不填 —</option>
+                        {mbtiOptions.map((item) => <option key={item}>{item}</option>)}
+                      </select>
+                      <select value={otherMbti} onChange={(e) => setOtherMbti(e.target.value)} className="w-full rounded-full border border-stone-200 bg-[#FAF6EE] px-4 py-2.5 text-[13px] font-medium text-ink outline-none">
+                        <option value="">— Ta 不填 —</option>
+                        {mbtiOptions.map((item) => <option key={item}>{item}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Generate button (big) */}
                 <button
                   onClick={() => runRecommendation("balanced")}
                   disabled={isGenerating}
-                  className="btn-hinge-primary mt-2 flex w-full items-center justify-center gap-2 py-4 text-[15px] disabled:opacity-70"
-                >
-                  <Sparkles className={cn("h-4 w-4", isGenerating && "animate-pulse")} />
-                  {isGenerating ? (
-                    <span>AI 正在润色…</span>
-                  ) : (
-                    <>
-                      <span className="serif-hero text-[18px] italic" style={{ fontWeight: 400 }}>摇一摇</span>
-                      <span className="text-stone-400">·</span>
-                      <span>生成今晚计划</span>
-                    </>
+                  className={cn(
+                    "btn-hinge-primary flex w-full items-center justify-center gap-2 py-5 text-[16px] disabled:opacity-70",
+                    justShook && "animate-shake"
                   )}
+                >
+                  <Sparkles className={cn(
+                    "h-5 w-5 transition-transform",
+                    justShook && "animate-spin-fast",
+                    isGenerating && "animate-pulse"
+                  )} />
+                  <span className="serif-hero text-[20px] italic" style={{ fontWeight: 400 }}>摇一摇</span>
+                  <span className="text-stone-400">·</span>
+                  <span>生成今晚计划</span>
                 </button>
+
+                <div className="flex items-center justify-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep(2)}
+                    className="text-[13px] text-stone-500 hover:text-ink"
+                  >
+                    ← 返回
+                  </button>
+                </div>
 
                 {aiError && (
                   <p className="text-center text-[11px] text-mauve">{aiError}</p>
                 )}
+              </div>
+            )}
+            </>
+            )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    onClick={() => runRecommendation("safer")}
-                    variant="outline"
-                    className={cn(
-                      "w-full rounded-full border-stone-300 bg-white hover:bg-stone-50",
-                      rerollMode === "safer" ? "border-ink bg-ink text-white hover:bg-ink hover:text-white" : "text-stone-900"
-                    )}
-                  >
-                    更保守一点
-                  </Button>
-                  <Button
-                    onClick={() => runRecommendation("memorable")}
-                    variant="outline"
-                    className={cn(
-                      "w-full rounded-full border-stone-300 bg-white hover:bg-stone-50",
-                      rerollMode === "memorable" ? "border-ink bg-ink text-white hover:bg-ink hover:text-white" : "text-stone-900"
-                    )}
-                  >
-                    更有记忆点一点
-                  </Button>
-                </div>
-            </div>
-
+            {/* ========== RESULT UI (only shown after ceremony completes) ========== */}
+            {showResult && !ceremonyPhase && (
+            <>
             <div className="rounded-[32px] border border-ink bg-ink p-7 text-white shadow-lg">
               <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-stone-400">Tonight</p>
-              <h3 className="serif-hero mt-4 text-[30px] leading-[1.05] italic">{recommendation.tagline}</h3>
+              <h3 className="serif-hero mt-4 text-[24px] sm:text-[30px] leading-[1.05] italic">{recommendation.tagline}</h3>
               <p className="mt-5 text-[14px] leading-[1.7] text-stone-300">{recommendation.analysis}</p>
 
               {/* Compact badges: only the 3 most informative */}
@@ -3154,15 +3571,60 @@ export default function ShanghaiDatingGuideDemo() {
               </div>
             </div>
 
+            {/* Action bar: edit this plan + reroll directions */}
+            <div className="rounded-[24px] border border-stone-200 bg-paper p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-stone-500">Not quite right?</p>
+                <button
+                  onClick={editPlan}
+                  className="text-[12px] text-stone-600-ink hover:text-ink underline underline-offset-2 decoration-stone-300 hover:decoration-ink"
+                >
+                  改一下输入 ✎
+                </button>
+              </div>
+              <p className="text-[11px] text-stone-500 leading-relaxed">
+                点下面任一按钮会<span className="text-ink">重新摇一次</span>，整套推荐会往该方向偏。
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => runRecommendation("safer")}
+                  className={cn(
+                    "rounded-full border px-3 py-2 text-[12px] font-medium transition",
+                    rerollMode === "safer"
+                      ? "border-ink bg-ink text-white"
+                      : "border-stone-300 bg-paper text-stone-600-ink hover:border-mauve hover:text-ink"
+                  )}
+                >
+                  更保守一点
+                </button>
+                <button
+                  onClick={() => runRecommendation("memorable")}
+                  className={cn(
+                    "rounded-full border px-3 py-2 text-[12px] font-medium transition",
+                    rerollMode === "memorable"
+                      ? "border-ink bg-ink text-white"
+                      : "border-stone-300 bg-paper text-stone-600-ink hover:border-mauve hover:text-ink"
+                  )}
+                >
+                  更有记忆点一点
+                </button>
+              </div>
+              {aiError && (
+                <p className="text-center text-[11px] text-mauve">{aiError}</p>
+              )}
+            </div>
+
             <div className="rounded-[28px] border border-stone-200 bg-paper p-6 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-stone-500">Tonight's schedule</p>
                   <h4 className="serif-hero mt-3 text-[24px] leading-tight text-ink">为你排好的流程</h4>
                 </div>
-                <Badge className="bg-mauve-soft text-mauve" style={{ border: "1px solid rgba(164,134,157,0.3)" }}>可局部替换</Badge>
+                <Badge className="bg-mauve-soft text-mauve" style={{ border: "1px solid rgba(164,134,157,0.3)" }}>单独可换</Badge>
               </div>
-              <p className="mt-3 text-[13px] leading-[1.65] text-stone-600-ink">整体可以，某个 block 不想去？单独换，不用重摇。</p>
+              <p className="mt-3 text-[13px] leading-[1.65] text-stone-600-ink">
+                整体没问题，但某个 block 不想去？<span className="text-ink font-medium">不用重摇整套</span>——在对应 block 下面告诉 AI 想怎么换，它会只替换那一段。
+              </p>
               <div className="mt-5 space-y-3">
                 {autoDateSchedule.map((item, index) => (
                   <div key={item.id} className="relative rounded-[20px] border border-stone-200 bg-[#FAF6EE] p-5">
@@ -3173,27 +3635,37 @@ export default function ShanghaiDatingGuideDemo() {
                         <div className="mt-1.5 text-[12px] leading-[1.6] text-stone-600-ink">{item.note}</div>
                       </div>
                     </div>
-                    <Input
-                      value={scheduleBlockHints[index] || ""}
-                      onChange={(e) => setScheduleBlockHints((prev) => ({ ...prev, [index]: e.target.value }))}
-                      placeholder="想怎么换？更安静 / 想唱歌 / 不要走太多"
-                      className="mt-4 rounded-full border-stone-200 bg-paper px-4 py-2.5 text-[12px] placeholder:text-stone-400"
-                    />
-                    <div className="mt-2.5 flex gap-2">
-                      <button
-                        onClick={() => rerollScheduleBlock(index)}
-                        disabled={replacingBlockIndex === index}
-                        className="flex-1 rounded-full border border-stone-200 bg-paper px-3 py-2 text-[12px] font-medium text-stone-600-ink transition hover:border-mauve hover:text-ink disabled:opacity-60"
-                      >
-                        换一个
-                      </button>
-                      <button
-                        onClick={() => applyHintedScheduleBlockReplacement(index)}
-                        disabled={replacingBlockIndex === index}
-                        className="btn-hinge-primary flex-1 px-3 py-2 text-[12px] disabled:opacity-70"
-                      >
-                        {replacingBlockIndex === index ? "AI 解读中…" : "按方向替换 →"}
-                      </button>
+
+                    {/* Hint input 视觉加重 —— 这是用户和 AI 交互的核心入口 */}
+                    <div className="mt-4 rounded-[16px] border border-mauve/25 bg-mauve-soft/30 p-3">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Sparkles className="h-3 w-3 text-mauve shrink-0" />
+                        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-mauve">
+                          告诉 AI 这一段想怎么换
+                        </p>
+                      </div>
+                      <Input
+                        value={scheduleBlockHints[index] || ""}
+                        onChange={(e) => setScheduleBlockHints((prev) => ({ ...prev, [index]: e.target.value }))}
+                        placeholder="比如：想更安静 / 换成日料 / 不要走太多 / 想喝一杯"
+                        className="rounded-full border-stone-200 bg-paper px-4 py-2.5 text-[12px] placeholder:text-stone-400"
+                      />
+                      <div className="mt-2.5 flex gap-2">
+                        <button
+                          onClick={() => rerollScheduleBlock(index)}
+                          disabled={replacingBlockIndex === index}
+                          className="flex-1 rounded-full border border-stone-200 bg-paper px-3 py-2 text-[12px] font-medium text-stone-600-ink transition hover:border-mauve hover:text-ink disabled:opacity-60"
+                        >
+                          随便换一个
+                        </button>
+                        <button
+                          onClick={() => applyHintedScheduleBlockReplacement(index)}
+                          disabled={replacingBlockIndex === index}
+                          className="btn-hinge-primary flex-1 px-3 py-2 text-[12px] disabled:opacity-70"
+                        >
+                          {replacingBlockIndex === index ? "AI 解读中…" : "按方向换 →"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -3231,6 +3703,8 @@ export default function ShanghaiDatingGuideDemo() {
             )}
 
             <RouteCard item={recommendation.route} onOpen={() => openRoute(recommendation.route)} />
+            </>
+            )}
           </div>
         )}
 
